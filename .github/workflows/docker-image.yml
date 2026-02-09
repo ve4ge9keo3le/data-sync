@@ -1,0 +1,40 @@
+#docker-image.yml
+name: Data Sync
+on:
+  workflow_dispatch:
+    inputs:
+      source:
+        description: 'trigger source'
+        required: false
+        default: 'cron-job.org'
+jobs:
+  updater:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: true
+      - name: Append record
+        run: |
+          set -e
+          git config user.name "github-actions"
+          git config user.email "github-actions@github.com"
+          mkdir -p logs
+          ACCOUNT_ID="$(basename "$GITHUB_REPOSITORY")"
+          FILE="logs/${ACCOUNT_ID}.txt"
+          echo "$(date '+%T') | counter=$(shuf -i100000-999999 -n1)" >> "$FILE"
+          git add "$FILE"
+          git commit -m "sync: first stage"
+          git push
+          sleep $(( ( $(date +%s) % 3 ) + 1 ))
+          echo "$(date '+%T') | index=$(shuf -i1000-9999 -n1)" >> "$FILE"
+          git add "$FILE"
+          git commit -m "sync: profile update"
+          git push
+          sleep $(( ( $(date +%s) % 3 ) + 1 ))
+          NASHJ="$(sha256sum "$FILE" | awk '{print $1}')"
+          echo "$(date '+%T') | proof=$NASHJ" >> "$FILE"
+          git add "$FILE"
+          git commit -m "log: finalize hash"
+          git push
