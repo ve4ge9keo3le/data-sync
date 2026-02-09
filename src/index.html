@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="color-scheme" content="light dark">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        .contentFrame {
+            display: block;
+            width: 98%;
+            margin-left: auto;
+            margin-right: auto;
+            border: none;
+            height: auto; /* Default height to show it initially */
+        }
+    </style>
+    <script>
+        const saveName = 'tittle';
+        let currentIndex = localStorage.getItem(saveName);
+        if (currentIndex === null) {
+            currentIndex = 1;
+        } else {
+            currentIndex = parseInt(currentIndex);
+        }
+        const imageFormats1 = ['komikindo.co.png', 'komikindo.co.jpg', 'jpg', 'webp', 'jpeg', 'png'];
+        const imageFormats2 = ['kiryuu.id.jpg', 'kiryuu.id.png']
+        const imageFormats = imageFormats1.concat(imageFormats2);
+        function checkImageExists(url) {
+            return new Promise((resolve, reject) => {
+                const img = new Image();
+                img.onload = () => resolve(true);
+                img.onerror = () => resolve(false);
+                img.src = url;
+            });
+        }
+
+        async function detectImageFormat(basePath, pageNumber) {
+            for (const format of imageFormats) {
+                const url = `${basePath}${pageNumber}.${format}`;
+                const exists = await checkImageExists(url);
+                if (exists) {
+                    return format;
+                }
+            }
+            return null;
+        }
+
+        async function updateImages() {
+            const basePath = `C:/list/manga/${saveName}/c-${currentIndex}/`;
+            const container = document.getElementById('imageContainer');
+            container.innerHTML = '';
+
+            for (let i = 0; i <= 300; i++) {
+                const formattedNumber = i.toString().padStart(3, '0');
+                const imageFormat = await detectImageFormat(basePath, formattedNumber);
+                if (imageFormat) {
+                    const img = document.createElement('img');
+                    img.src = `${basePath}${formattedNumber}.${imageFormat}`;
+                    img.className = 'contentFrame';
+                    container.appendChild(img);
+                }
+            }
+
+            updateTitle();
+            updateCenterText();
+        }
+
+        function updateTitle() {
+            document.title = `Chapter ${currentIndex}`;
+        }
+
+        function updateCenterText() {
+            const centerTexts = document.querySelectorAll('#centerText');
+            centerTexts.forEach(centerText => {
+                const chapterLink = `https://www.google.com/search?q=titstles chapter ${currentIndex}`;
+                centerText.textContent = `titstles chapter ${currentIndex}`;
+                centerText.href = chapterLink;
+                centerText.target = "_blank"; // Membuka tautan di tab baru
+            });
+        }
+
+        function prevContent() {
+            if (currentIndex > 1) {
+                currentIndex--;
+                localStorage.setItem(saveName, currentIndex);
+                updateImages();
+            }
+        }
+
+        function nextContent() {
+            currentIndex++;
+            localStorage.setItem(saveName, currentIndex);
+            updateImages();
+        }
+
+        document.addEventListener('DOMContentLoaded', function () {
+            document.getElementById('prev').addEventListener('click', prevContent);
+            document.getElementById('next').addEventListener('click', nextContent);
+
+            document.addEventListener('keydown', (event) => {
+                if (event.key === 'ArrowLeft') {
+                    prevContent();
+                } else if (event.key === 'ArrowRight') {
+                    nextContent();
+                }
+            });
+
+            updateTitle();
+            updateImages();
+        });
+    </script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .centerText {
+            font-size: 24px;
+            font-weight: bold;
+            margin: 20px 0;
+        }
+        .totalEpisodesTop {
+            font-size: 24px;
+            font-weight: bold;
+            margin: 20px 0;
+        }
+        .totalEpisodesBot {
+            font-size: 24px;
+            font-weight: bold;
+            margin: 20px 0;
+        }
+        .buttonContainer {
+            display: flex;
+            justify-content: space-between;
+            width: 100%;
+            max-width: 600px;
+            margin: 20px 0;
+        }
+        #imageContainer {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+    </style>
+</head>
+<body>
+    <div id="totalEpisodesTop" class="totalEpisodesTop">Total Capter: totalsepeansdajsd</div>
+    <a id="centerText" class="centerText"></a>
+    <div id="imageContainer"></div>
+    <a id="centerText" class="centerText"></a>
+    <div class="buttonContainer">
+        <button id="prev"> < </button>
+        <button id="next"> > </button>
+    </div>
+
+    <div id="totalEpisodesBot" class="totalEpisodesBot">Total Episode: totalsepeansdajsd</div>
+</body>
+</html>
